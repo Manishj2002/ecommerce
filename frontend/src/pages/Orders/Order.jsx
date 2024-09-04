@@ -67,6 +67,8 @@ const Order = () => {
       await deliverOrder(orderId)
       refetch()
     }
+
+
   return  isLoading ? (
     <Loader />
   ) : error ? (
@@ -156,19 +158,19 @@ const Order = () => {
         <h2 className="text-xl font-bold mb-2 mt-[3rem]">Order Summary</h2>
         <div className="flex justify-between mb-2">
           <span>Items</span>
-          <span>$ {order.itemsPrice}</span>
+          <span>$ {order?.itemsPrice}</span>
         </div>
         <div className="flex justify-between mb-2">
           <span>Shipping</span>
-          <span>$ {order.shippingPrice}</span>
+          <span>$ {order?.shippingPrice}</span>
         </div>
         <div className="flex justify-between mb-2">
           <span>Tax</span>
-          <span>$ {order.taxPrice}</span>
+          <span>$ {order?.taxPrice}</span>
         </div>
         <div className="flex justify-between mb-2">
           <span>Total</span>
-          <span>$ {order.totalPrice}</span>
+          <span>$ {order?.totalPrice}</span>
         </div>
 
         {!order.isPaid && (
