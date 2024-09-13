@@ -12,10 +12,13 @@ import uploadRoutes from './routes/uploadRoutes.js'
 dotenv.config()
 const port = process.env.PORT || 5000
 
+const __dirname = path.resolve()
+
 connectDb()
 
 
 const app = express()
+
 
 app.use(cookieParser())
 app.use(express.json())
@@ -28,11 +31,16 @@ app.use('/api/products',productRoutes)
 app.use('/api/orders',orderRoutes)
 app.use('/api/upload',uploadRoutes)
 
+app.use(express.static(path.join(__dirname,"/frontend/dist")))
+
+app.get("*",(req,res)=>{
+    res.sendFile(path.join(__dirname,"/frontend","dist","index.html"))
+})
+
 app.use('/api/config/paypal',(req,res)=>{
     res.send({clientId:process.env.PAYPAL_CLIENT_ID})
 })
 
-const __dirname = path.resolve()
 
 app.use('/uploads',express.static(path.join(__dirname + '/uploads')))
 
