@@ -111,7 +111,7 @@ const Register = () => {
               </label>
 
               <input
-                type="confirmPassword"
+                type="password"
                 id="confirmPassword"
                 className="mt-1 p-2 border rounded w-full bg-transparent"
                 value={confirmPassword}

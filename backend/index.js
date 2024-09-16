@@ -31,11 +31,7 @@ app.use('/api/products',productRoutes)
 app.use('/api/orders',orderRoutes)
 app.use('/api/upload',uploadRoutes)
 
-app.use(express.static(path.join(__dirname,"/frontend/dist")))
 
-app.get("*",(req,res)=>{
-    res.sendFile(path.join(__dirname,"/frontend","dist","index.html"))
-})
 
 app.use('/api/config/paypal',(req,res)=>{
     res.send({clientId:process.env.PAYPAL_CLIENT_ID})
@@ -43,6 +39,12 @@ app.use('/api/config/paypal',(req,res)=>{
 
 
 app.use('/uploads',express.static(path.join(__dirname + '/uploads')))
+
+app.use(express.static(path.join(__dirname,"/frontend/dist")))
+
+app.get("*",(req,res)=>{
+    res.sendFile(path.join(__dirname,"frontend","dist","index.html"))
+})
 
 app.listen(port,function () {
     console.log(`server running on port ${port}`)
