@@ -18,8 +18,8 @@ import uploadRoutes from './routes/uploadRoutes.js';
 // Define __dirname
 const __dirname = path.resolve();
 
-// Load .env from root
-const envPath = path.resolve(__dirname, '../.env');
+// Load .env from root (corrected)
+const envPath = path.resolve(__dirname, '.env');
 console.log(`Attempting to load .env from: ${envPath}`);
 
 if (!fs.existsSync(envPath)) {
