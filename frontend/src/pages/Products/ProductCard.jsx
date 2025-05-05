@@ -5,55 +5,65 @@ import { addToCart } from "../../redux/features/cart/cartSlice";
 import { toast } from "react-toastify";
 import HeartIcon from "./HeartIcon";
 
+// Utility to truncate description by words
+const truncateWords = (text, maxWords) => {
+  if (!text) return "";
+  const words = text.split(" ");
+  return words.length > maxWords
+    ? words.slice(0, maxWords).join(" ") + "..."
+    : text;
+};
+
 const ProductCard = ({ p }) => {
   const dispatch = useDispatch();
 
   const addToCartHandler = (product, qty) => {
+    console.log("Adding to cart (ProductCard):", { ...product, qty }); // Debug log
     dispatch(addToCart({ ...product, qty }));
     toast.success("Item added successfully");
   };
 
   return (
-    <div className="max-w-sm relative bg-[#1A1A1A] rounded-lg shaodw dark:bg-gray-800 dark:border-gray-700">
+    <div className="w-full max-w-sm relative bg-[#1A1A1A] rounded-xl shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-xl">
       <section className="relative">
         <Link to={`/product/${p._id}`}>
-          <span className="absolute bottom-3 right-3 bg-pink-100 text-pink-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-pink-900 dark:text-pink-300">
-            {p?.brand}
+          <span className="absolute top-3 right-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+            {p?.brand || "Unknown"}
           </span>
           <img
-            className="cursor-pointer w-full"
-            src={p.image}
-            alt={p.name}
-            style={{ height: "170px", objectFit: "cover" }}
+            className="w-full rounded-t-xl"
+            src={p.image || "/fallback-image.jpg"}
+            alt={p.name || "Product"}
+            style={{ height: "200px", objectFit: "cover" }}
+            onError={() => console.log("Image failed to load:", p.image)} // Debug log
           />
         </Link>
         <HeartIcon product={p} />
       </section>
 
       <div className="p-5">
-        <div className="flex justify-between">
-          <h5 className="mb-2 text-xl text-whiet dark:text-white">{p?.name}</h5>
-
-          <p className=" font-semibold text-pink-500">
+        <div className="flex justify-between items-center">
+          <h5 className="mb-2 text-xl font-semibold text-white">{p?.name || "Unnamed Product"}</h5>
+          <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
             {p?.price?.toLocaleString("en-US", {
               style: "currency",
               currency: "USD",
-            })}
+            }) || "$0.00"}
           </p>
         </div>
 
-        <p className="mb-3 font-normal text-[#CFCFCF]">
-          {p?.description?.substring(0, 60)} ...
+        <p className="mb-4 text-sm text-gray-400">
+          {truncateWords(p?.description, 15)}
         </p>
 
         <section className="flex justify-between items-center">
           <Link
             to={`/product/${p._id}`}
-            className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-pink-700 rounded-lg hover:bg-pink-800 focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-800"
+            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg hover:bg-gradient-to-r hover:from-pink-600 hover:to-purple-700 focus:ring-4 focus:ring-pink-300 transition-colors duration-300"
           >
-            Read More
+            View Details
             <svg
-              className="w-3.5 h-3.5 ml-2"
+              className="w-4 h-4 ml-2"
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -70,10 +80,12 @@ const ProductCard = ({ p }) => {
           </Link>
 
           <button
-            className="p-2 rounded-full"
+            className="flex items-center px-4 py-2 text-sm font-semibold text-white bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors duration-300"
             onClick={() => addToCartHandler(p, 1)}
+            title="Add to Cart"
           >
-            <AiOutlineShoppingCart size={25} />
+            <AiOutlineShoppingCart className="mr-2" size={20} />
+            Add
           </button>
         </section>
       </div>
