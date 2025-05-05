@@ -15,10 +15,10 @@ import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 
-// Define __dirname
-const __dirname = path.resolve();
+// Define __dirname correctly
+const __dirname = path.resolve(path.dirname(''));
 
-// Load .env from root (corrected)
+// Load .env from root
 const envPath = path.resolve(__dirname, '.env');
 console.log(`Attempting to load .env from: ${envPath}`);
 
