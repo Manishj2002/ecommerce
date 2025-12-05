@@ -20,7 +20,7 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 // ------------------------------
 dotenv.config();
 
-// Correct path handling
+// Correct path
 const __dirname = path.resolve();
 
 // ------------------------------
@@ -32,22 +32,35 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // ------------------------------
+// CORS FIX (IMPORTANT)
+// ------------------------------
+// CORS MUST allow your frontend domain
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://shoppingstore10.netlify.app", // your frontend
+    ],
+    credentials: true,
+  })
+);
+
+// Preflight request support
+app.options("*", cors());
+
+// ------------------------------
 // Middlewares
 // ------------------------------
-
 app.use(helmet());
-app.use(cors());
 app.use(compression());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Logging (dev)
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-// Rate limit
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -86,7 +99,6 @@ app.get("/api/config/paypal", (req, res) => {
 // ------------------------------
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "frontend", "dist")));
-
   app.get("*", (req, res) =>
     res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"))
   );
