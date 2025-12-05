@@ -1,4 +1,4 @@
-// backend/server.js  ← FINAL WORKING VERSION (2025)
+// backend/server.js
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -17,14 +17,14 @@ import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 
-// Fix __dirname
+// Fix __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const port = process.env.PORT || 5000;
 
-// Validate env
+// Validate required env
 if (!process.env.MONGODB_URI || !process.env.JWT_SECRET) {
   console.error("Missing MONGODB_URI or JWT_SECRET");
   process.exit(1);
@@ -37,9 +37,11 @@ const app = express();
 // Security & Performance
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(compression());
+
+// CORS
 app.use(cors({
   origin: process.env.NODE_ENV === "production"
-    ? "https://your-app.onrender.com"  // ← change to your real URL later
+    ? "https://your-app-name.onrender.com"  // ← CHANGE THIS TO YOUR REAL RENDER URL
     : "http://localhost:3000",
   credentials: true
 }));
@@ -50,42 +52,49 @@ if (process.env.NODE_ENV !== "production") {
 
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
 
-// Body parsing — ONLY JSON & URLENCODED (formidable is used only in upload route)
+// Body parsing
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// === ROUTES ===
+// === API ROUTES ===
 app.use("/api/users", userRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/upload", uploadRoutes);   // ← formidable() is inside this file only
+app.use("/api/upload", uploadRoutes);
 
 // PayPal
 app.get("/api/config/paypal", (req, res) =>
-  res.send({ clientId: process.env.PAYPAL_CLIENT_ID })
+  res.send({ clientId: process.env.PAYPAL_CLIENT_ID || "" })
 );
 
-// PRODUCTION: Serve frontend
+// === SERVE FRONTEND IN PRODUCTION (RENDER) ===
 if (process.env.NODE_ENV === "production") {
-  const frontendPath = path.join(__dirname, "frontend", "dist");
+  const frontendPath = path.join(__dirname, "..", "frontend", "dist"); // ← GOES UP ONE LEVEL
+  
   app.use(express.static(frontendPath));
-  app.get("*", (req, res) =>
-    res.sendFile(path.join(frontendPath, "index.html"))
-  );
+
+  // For any route not matching API, serve index.html
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
 } else {
-  app.get("/", (req, res) =>
-    res.send(`API running on http://localhost:${port}`)
-  );
+  // Development
+  app.get("/", (req, res) => {
+    res.send(`API running on http://localhost:${port} | Development mode`);
+  });
 }
 
-// Error handler
+// Global error handler
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ message: "Server Error" });
+  console.error("Server Error:", err);
+  res.status(err.status || 500).json({
+    message: err.message || "Something went wrong!",
+  });
 });
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  console.log(`Mode: ${process.env.NODE_ENV || "development"}`);
 });
