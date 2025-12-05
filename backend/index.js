@@ -51,11 +51,22 @@ app.options("*", cors());
 // ------------------------------
 // Middlewares
 // ------------------------------
-app.use(helmet());
+// ------------------------------
+// Middlewares
+// ------------------------------
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false
+  })
+);
+
 app.use(compression());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
