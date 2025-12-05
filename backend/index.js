@@ -14,11 +14,10 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
-
+import { fileURLToPath } from 'url';
 
 const port = process.env.PORT || 5000;
 // Define __dirname correctly
-const __dirname = path.resolve();
 dotenv.config();
 
 // Ensure required environment variables are present
@@ -65,11 +64,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ✅ Serve uploaded images with proper CORS headers
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve uploads from root
 app.use('/uploads', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
-}, express.static(path.join(__dirname, 'uploads')));
+}, express.static(path.join(__dirname, '../uploads')));
 
 // API Routes
 app.use('/api/users', userRoutes);
