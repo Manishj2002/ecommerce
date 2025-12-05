@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "main": "backend/index.js",
   "type": "module",
+ 
   "scripts": {
     "server": "nodemon backend/index.js",
     "start": "node backend/index.js",
-    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
+    "build": "npm install && cd frontend && npm ci && npm run build && cd ..",
+    "dev": "concurrently \"npm run server\" \"cd frontend && npm run dev\""
   },
   "keywords": [],
   "author": "",
