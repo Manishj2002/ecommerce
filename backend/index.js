@@ -1,11 +1,13 @@
 import express from "express";
 import path from 'path';
 import cookieParser from "cookie-parser";
+import dotenv from 'dotenv';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import fs from 'fs';
 import connectDb from "./config/db.js";
 import userRoutes from './routes/userRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -13,89 +15,86 @@ import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 
-// ------------------------------
-// Load env variables (local dev only)
-// ------------------------------
-if (process.env.NODE_ENV !== 'production') {
-  import('dotenv').then(dotenv => dotenv.config());
-}
+// Define __dirname correctly
+const __dirname = path.resolve(path.dirname(''));
 
-// ------------------------------
-// Required ENV check
-// ------------------------------
-if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI is required");
-if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is required");
+dotenv.config();
+
+// Ensure required environment variables are present
+if (!process.env.MONGODB_URI) {
+  console.error('Error: MONGODB_URI is not defined in .env file');
+  process.exit(1);
+}
+if (!process.env.JWT_SECRET) {
+  console.error('Error: JWT_SECRET is not defined in .env file');
+  process.exit(1);
+}
 
 const port = process.env.PORT || 5000;
 
-// ------------------------------
-// Connect DB
-// ------------------------------
+// Connect to DB
 connectDb();
 
 const app = express();
 
-// ------------------------------
-// Middlewares
-// ------------------------------
+// Security
 app.use(helmet());
-app.use(cors({
-  origin: [
-    "http://localhost:5173",                 // local dev
-    "https://shoppingstore10.netlify.app"   // frontend deployed
-  ],
-  credentials: true
-}));
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(compression());
-if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
+// CORS
+app.use(cors());
+
+// Logging
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+// Compression
+app.use(compression());
+
+// Rate Limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
 });
 app.use(limiter);
 
-// ------------------------------
-// Serve uploaded images
-// ------------------------------
+// Body Parsing
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ✅ Serve uploaded images with proper CORS headers
 app.use('/uploads', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
-}, express.static(path.join(process.cwd(), 'uploads')));
+}, express.static(path.join(__dirname, 'uploads')));
 
-// ------------------------------
 // API Routes
-// ------------------------------
 app.use('/api/users', userRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
 
-// PayPal config
-app.get('/api/config/paypal', (req, res) => {
-  res.send({ clientId: process.env.PAYPAL_CLIENT_ID || '' });
+// PayPal Config Route
+app.use('/api/config/paypal', (req, res) => {
+  res.send({ clientId: process.env.PAYPAL_CLIENT_ID });
 });
 
-// ------------------------------
-// Serve frontend in production
-// ------------------------------
+// Frontend Static Files (Production)
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(process.cwd(), 'frontend', 'dist')));
-  app.get('*', (req, res) =>
-    res.sendFile(path.join(process.cwd(), 'frontend', 'dist', 'index.html'))
-  );
+  app.use(express.static(path.join(__dirname, 'frontend', 'dist')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
+  });
 } else {
-  app.get('/', (req, res) => res.send("API is running..."));
+  app.get('/', (req, res) => {
+    res.send('API is running...');
+  });
 }
 
-// ------------------------------
-// Global error handler
-// ------------------------------
+// Global Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
@@ -104,7 +103,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ------------------------------
-// Start server
-// ------------------------------
-app.listen(port, () => console.log(`Server running on port ${port}`));
+// Start Server
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
