@@ -22,19 +22,24 @@ const ProductList = () => {
     const [createProduct] = useCreateProductMutation()
     const { data: categories } = useFetchCategoriesQuery()
 
-    const uploadImageHandler = async (e) => {
-        const formData = new FormData()
-        formData.append('image', e.target.files[0])
+  const uploadImageHandler = async (e) => {
+    const formData = new FormData();
+    formData.append("image", e.target.files[0]);
 
-        try {
-            const res = await uploadProductImage(formData).unwrap()
-            toast.success(res.message)
-            setImage(res.image)
-            setImageUrl(res.image)
-        } catch (error) {
-            toast.error(error?.data?.message || error.message)
-        }
+    try {
+        const res = await uploadProductImage(formData).unwrap();
+
+        toast.success("Image uploaded successfully");
+
+        // Cloudinary returns URL
+        setImage(res.url);
+        setImageUrl(res.url);
+
+    } catch (error) {
+        toast.error(error?.data?.message || error.message);
     }
+};
+
 
     const handleSubmit = async(e)=>{
         e.preventDefault()

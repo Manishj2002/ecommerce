@@ -1,120 +1,91 @@
+// backend/server.js  ← FINAL WORKING VERSION (2025)
 import express from "express";
-import path from 'path';
+import path from "path";
+import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
-import dotenv from 'dotenv';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import compression from 'compression';
-import cors from 'cors';
-import rateLimit from 'express-rate-limit';
-import fs from 'fs';
+import dotenv from "dotenv";
+import helmet from "helmet";
+import morgan from "morgan";
+import compression from "compression";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
+
 import connectDb from "./config/db.js";
-import userRoutes from './routes/userRoutes.js';
-import categoryRoutes from './routes/categoryRoutes.js';
-import productRoutes from './routes/productRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
-import uploadRoutes from './routes/uploadRoutes.js';
-import { fileURLToPath } from 'url';
+import userRoutes from "./routes/userRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 
-const port = process.env.PORT || 5000;
-// Define __dirname correctly
+// Fix __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 dotenv.config();
+const port = process.env.PORT || 5000;
 
-// Ensure required environment variables are present
-if (!process.env.MONGODB_URI) {
-  console.error('Error: MONGODB_URI is not defined in .env file');
-  process.exit(1);
-}
-if (!process.env.JWT_SECRET) {
-  console.error('Error: JWT_SECRET is not defined in .env file');
+// Validate env
+if (!process.env.MONGODB_URI || !process.env.JWT_SECRET) {
+  console.error("Missing MONGODB_URI or JWT_SECRET");
   process.exit(1);
 }
 
-
-
-// Connect to DB
 connectDb();
 
 const app = express();
 
-// Security
-app.use(helmet());
-
-// CORS
-app.use(cors());
-
-// Logging
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
-
-// Compression
+// Security & Performance
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(compression());
+app.use(cors({
+  origin: process.env.NODE_ENV === "production"
+    ? "https://your-app.onrender.com"  // ← change to your real URL later
+    : "http://localhost:3000",
+  credentials: true
+}));
 
-// Rate Limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-});
-app.use(limiter);
-
-// Body Parsing
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// ✅ Serve uploaded images with proper CORS headers
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-// Serve uploads from root
-app.use('/uploads', (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  next();
-}, express.static(path.join(__dirname, '../uploads')));
-
-
-// API Routes
-app.use('/api/users', userRoutes);
-app.use('/api/category', categoryRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use(express.static(path.join(__dirname, '/frontend/dist')));
-
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
-})
-
-// PayPal Config Route
-app.use('/api/config/paypal', (req, res) => {
-  res.send({ clientId: process.env.PAYPAL_CLIENT_ID });
-});
-
-// Frontend Static Files (Production)
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
-  });
-} else {
-  app.get('/', (req, res) => {
-    res.send('API is running...');
-  });
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
 }
 
-// Global Error Handler
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
+
+// Body parsing — ONLY JSON & URLENCODED (formidable is used only in upload route)
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// === ROUTES ===
+app.use("/api/users", userRoutes);
+app.use("/api/category", categoryRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/upload", uploadRoutes);   // ← formidable() is inside this file only
+
+// PayPal
+app.get("/api/config/paypal", (req, res) =>
+  res.send({ clientId: process.env.PAYPAL_CLIENT_ID })
+);
+
+// PRODUCTION: Serve frontend
+if (process.env.NODE_ENV === "production") {
+  const frontendPath = path.join(__dirname, "frontend", "dist");
+  app.use(express.static(frontendPath));
+  app.get("*", (req, res) =>
+    res.sendFile(path.join(frontendPath, "index.html"))
+  );
+} else {
+  app.get("/", (req, res) =>
+    res.send(`API running on http://localhost:${port}`)
+  );
+}
+
+// Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined,
-  });
+  console.error(err);
+  res.status(500).json({ message: "Server Error" });
 });
 
-// Start Server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

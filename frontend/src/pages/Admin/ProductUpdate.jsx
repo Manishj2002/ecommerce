@@ -45,18 +45,21 @@ const ProductUpdate = () => {
   }, [productData]);
 
 
-  const uploadImageHandler = async (e) => {
-    const formData = new FormData()
-    formData.append('image', e.target.files[0])
+const uploadImageHandler = async (e) => {
+  const formData = new FormData();
+  formData.append("image", e.target.files[0]);
 
-    try {
-        const res = await uploadProductImage(formData).unwrap()
-        toast.success("item added successfully")
-        setImage(res.image)
-    } catch (error) {
-        toast.error(error?.data?.message || error.message)
-    }
-}
+  try {
+    const res = await uploadProductImage(formData).unwrap();
+
+    toast.success("Image uploaded successfully");
+
+    setImage(res.url); // IMPORTANT FIX
+  } catch (error) {
+    toast.error(error?.data?.message || error.message);
+  }
+};
+
 
 const handleSubmit = async(e)=>{
     e.preventDefault()

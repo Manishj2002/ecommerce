@@ -6,7 +6,7 @@ import { RouterProvider, createRoutesFromElements, Route } from "react-router";
 import { createBrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./redux/features/store.js";
-import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+// import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { HelmetProvider } from 'react-helmet-async';
 import SEO from "./components/SEO.jsx";
 
@@ -226,9 +226,9 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
       <HelmetProvider>
-        <PayPalScriptProvider options={paypalInitialOptions}>
+        {/* <PayPalScriptProvider options={paypalInitialOptions}> */}
           <RouterProvider router={router} />
-        </PayPalScriptProvider>
+        {/* </PayPalScriptProvider> */}
       </HelmetProvider>
     </Provider>
   </StrictMode>
