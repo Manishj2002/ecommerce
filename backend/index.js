@@ -15,9 +15,10 @@ import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 
-// Define __dirname correctly
-const __dirname = path.resolve(path.dirname(''));
 
+const port = process.env.PORT || 5000;
+// Define __dirname correctly
+const __dirname = path.resolve();
 dotenv.config();
 
 // Ensure required environment variables are present
@@ -30,7 +31,7 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
-const port = process.env.PORT || 5000;
+
 
 // Connect to DB
 connectDb();
@@ -76,6 +77,12 @@ app.use('/api/category', categoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use(express.static(path.join(__dirname, '/frontend/dist')));
+
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+})
 
 // PayPal Config Route
 app.use('/api/config/paypal', (req, res) => {
