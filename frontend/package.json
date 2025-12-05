@@ -43,7 +43,7 @@
     "globals": "^15.9.0",
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.9",
-    "vite": "^5.4.5",
+    "vite": "^5.4.21",
     "workbox-cli": "^7.3.0"
   }
 }
