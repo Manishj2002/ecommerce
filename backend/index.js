@@ -66,13 +66,13 @@ app.use(express.urlencoded({ extended: true }));
 // ✅ Serve uploaded images with proper CORS headers
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 // Serve uploads from root
 app.use('/uploads', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 }, express.static(path.join(__dirname, '../uploads')));
+
 
 // API Routes
 app.use('/api/users', userRoutes);
@@ -94,9 +94,10 @@ app.use('/api/config/paypal', (req, res) => {
 
 // Frontend Static Files (Production)
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'frontend', 'dist')));
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
+    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
   });
 } else {
   app.get('/', (req, res) => {
