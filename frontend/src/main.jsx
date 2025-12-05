@@ -217,18 +217,18 @@ const router = createBrowserRouter(
 );
 
 // PayPal initial options using environment variable
-// const paypalInitialOptions = {
-//   "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID || "test",
-//   currency: "USD",
-// };
+const paypalInitialOptions = {
+  "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID || "test",
+  currency: "USD",
+};
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
       <HelmetProvider>
-        {/* <PayPalScriptProvider options={paypalInitialOptions}> */}
+        <PayPalScriptProvider options={paypalInitialOptions}>
           <RouterProvider router={router} />
-        {/* </PayPalScriptProvider> */}
+        </PayPalScriptProvider>
       </HelmetProvider>
     </Provider>
   </StrictMode>

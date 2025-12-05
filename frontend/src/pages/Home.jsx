@@ -26,9 +26,9 @@ const HeroBanner = () => (
 // New CategoryPreview Component
 const CategoryPreview = () => {
   const categories = [
-    { name: 'Electronics', image: '/path-to-electronics.jpg', link: '/shop?category=electronics' },
-    { name: 'Fashion', image: '/path-to-fashion.jpg', link: '/shop?category=fashion' },
-    { name: 'Home', image: '/path-to-home.jpg', link: '/shop?category=home' },
+    { name: 'Electronics', image: '/images/image-1726489631923.webp', link: '/shop?category=electronics' },
+    { name: 'Fashion', image: '/images/image-1764905376735.jpg', link: '/shop?category=fashion' },
+    { name: 'Home', image: '/images/image-1764911853260.jpg', link: '/shop?category=home' },
   ];
 
   return (

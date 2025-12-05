@@ -27,17 +27,19 @@ const PlaceOrder = () => {
   const placeOrderHandler = async () => {
     try {
       const res = await createOrder({
-        orderItems: cart.cartItems,
-        shippingAddress: cart.shippingAddress,
-        paymentMethod: cart.paymentMethod,
-        shippingPrice: cart.shippingPrice,
-        itemsPrice: cart.itemsPrice,
-        taxPrice: cart.taxPrice, // Corrected line
-        totalPrice: cart.totalPrice, // Corrected line
-      }).unwrap();
-  
-      dispatch(clearCartItem()); 
-      navigate(`/order/${res._id}`);
+  orderItems: cart.cartItems,
+  shippingAddress: cart.shippingAddress,
+  paymentMethod: cart.paymentMethod,
+  shippingPrice: cart.shippingPrice,
+  itemsPrice: cart.itemsPrice,
+  taxPrice: cart.taxPrice,
+  totalPrice: cart.totalPrice,
+}).unwrap();
+
+dispatch(clearCartItem());
+toast.success('Your order is successfully placed. Your items will reach you soon!');
+navigate(`/order/${res._id}`);
+
     } catch (error) {
       toast.error(error);
     }

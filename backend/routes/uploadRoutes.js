@@ -33,12 +33,15 @@ const uploadSingleImage = upload.single('image');
 
 router.post('/', (req, res) => {
   uploadSingleImage(req, res, (err) => {
+    console.log('req.file:', req.file);
+    console.log('err:', err);
     if (err) {
       return res.status(400).json({ message: err.message });
     }
+     
     if (req.file) {
       // Return absolute URL
-      const imageUrl = `http://localhost:5000/Uploads/${req.file.filename}`;
+      const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`; 
       return res.status(200).json({
         message: 'Image uploaded successfully',
         image: imageUrl,

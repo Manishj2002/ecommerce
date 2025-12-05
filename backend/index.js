@@ -18,17 +18,18 @@ import uploadRoutes from './routes/uploadRoutes.js';
 // Define __dirname correctly
 const __dirname = path.resolve(path.dirname(''));
 
-// Load .env from root
+// Load .env from root (make sure to use the correct path)
 const envPath = path.resolve(__dirname, '.env');
 console.log(`Attempting to load .env from: ${envPath}`);
 
 if (!fs.existsSync(envPath)) {
   console.error(`Error: .env file not found at ${envPath}`);
-  process.exit(1);
+  process.exit(1); // Terminate if .env file is missing
 }
 
 dotenv.config({ path: envPath });
 
+// Ensure required environment variables are present
 if (!process.env.MONGODB_URI) {
   console.error('Error: MONGODB_URI is not defined in .env file');
   process.exit(1);
